@@ -3,6 +3,8 @@
 ## 概要
 STAMP Workbenchを外部サポートするツールです。
 
+<img src="https://github.com/KeiTsumuta/swbsupport-tool/blob/main/toolimage1.png">
+
 本ツールは、STAMP Workbenchのプロジェクトファイルである「*.stmp」ファイルを読みとり、CA（Control Action）に関連するUCA（Unsafe Control Action）、UCAに関連するHCF(Hazard Causal Factor)、HCFに対応するシナリオと対策をツリー状に関連付けて指定した形式で出力するためのツールです。
 
 出力形式は、以下に示す４種類です。
