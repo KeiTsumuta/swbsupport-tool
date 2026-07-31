@@ -17,7 +17,7 @@
  */
 package tmu.fs.swbs.hcftree;
 
-import tmu.fs.swbs.hctree.writer.MakeExcelFile;
+import tmu.fs.swbs.hcftree.writer.MakeExcelFile;
 import tmu.fs.swbs.hcftree.model.SwbInfoModel;
 import tmu.fs.swbs.hcftree.model.SwbModelXml;
 import java.io.File;
@@ -32,9 +32,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import tmu.fs.swbs.hcftree.modelnotation.NotationModel;
 import tmu.fs.swbs.hcftree.modelnotation.NotationXml;
-import tmu.fs.swbs.hctree.writer.MakeCsvFile;
-import tmu.fs.swbs.hctree.writer.MakeMarkdown;
-import tmu.fs.swbs.hctree.writer.MakeTabFile;
+import tmu.fs.swbs.hcftree.writer.MakeCsvFile;
+import tmu.fs.swbs.hcftree.writer.MakeMarkdown;
 
 /**
  * STAMP　Workbenchプロジェクトデータからツリー状のデータを作成する処理。
@@ -46,15 +45,16 @@ public class Hcftree {
     public static final String STRAMP_MODEL = "model.stamp";
     public static final String STRAMP_NOTATION = "model.stampnotation";
 
+    private static SwbInfoModel treeRoot = null;
+
     /**
      * プロジェクトデータからツリー状のデータを作成する
      *
-     * @param type 出力タイプ（md:マークダウン、csv：CSV形式、excel:Excel、txt:ツリー状タブ区切りテキスト、）
-     * @param orderType 出力順序の指定（0:UCA番号順 、1:表示座標順）
      * @param stampFile 分析ファイル指定
+     * @param orderType 出力順序の指定（0:UCA番号順 、1:UCA矢印の始点の表示座標順）
      * @return
      */
-    public static void makeTree(String type, int orderType, String stampFile) throws Exception {
+    public static void makeTree(String stampFile, int orderType) throws Exception {
         SwbModelXml modelXml = new SwbModelXml();
         NotationXml notaModelXml = new NotationXml();
         List<NotationModel> notations = new ArrayList<>();
@@ -73,25 +73,63 @@ public class Hcftree {
             }
         }
         // UCAにHCFを関連付ける（階層化する）
-        SwbInfoModel sModel = modelXml.getCaTree(orderType, notations);
+        treeRoot = modelXml.getCaTree(orderType, notations);
         //System.out.println("*** CA - UCF - HCF ツリー start ***");
-        //System.out.println(sModel.toTreeText(1));
+        //System.out.println(treeRoot.toTreeString());
         //System.out.println("*** CA - UCF - HCF ツリー end ***");
+    }
+
+    /**
+     * カレントのツリーデータをリセットする。
+     */
+    public static void clearTreeData() {
+        treeRoot = null;
+    }
+
+    /**
+     * ツリーデータを取り出す。
+     *
+     * @return ツリーデータ
+     */
+    public static SwbInfoModel getTreeData() {
+        return treeRoot;
+    }
+
+    /**
+     * ツリーデータを設定する。
+     *
+     * @param sm ツリーデータ（ルート）
+     */
+    public static void setTreeData(SwbInfoModel sm) {
+        treeRoot = sm;
+    }
+
+    /**
+     * プロジェクトデータからツリー状のデータを作成する
+     *
+     * @param type 出力タイプ（md:マークダウン、csv：CSV形式、excel:Excel、txt:ツリー状タブ区切りテキスト、）
+     * @param stampFile 分析ファイル指定
+     * @return
+     */
+    public static void outputDoc(String type, String stampFile) throws Exception {
+        if (treeRoot == null) {
+            throw new SwbException("ツリーデータがありません。");
+        }
         switch (type) {
             case "md" -> {
                 // MarkDown形式のテキスト
-                writeUTF8File(type, stampFile, MakeMarkdown.getMarkdownDoc(sModel));
+                writeUTF8File(type, stampFile, MakeMarkdown.getMarkdownDoc(treeRoot));
             }
             case "csv" -> {
                 // CSV形式のテキスト
-                writeCSV(stampFile, sModel);
+                writeCSV(stampFile, treeRoot);
             }
             case "excel" ->
                 // Excelファイル
-                writeExcel(stampFile, sModel);
+                writeExcel(stampFile, treeRoot);
             default ->
                 // タブ形式のテキストファイル
-                writeUTF8File(type, stampFile, MakeTabFile.getTabDoc(sModel));
+                writeTab(stampFile, treeRoot);
         }
     }
 
@@ -124,7 +162,19 @@ public class Hcftree {
             File f = new File(stampFile);
             String dirName = f.getPath() + ".csv";
             Path path = Paths.get(dirName);
-            MakeCsvFile.writeCSV(path, sModel);
+            MakeCsvFile.writeCSV(path, sModel, 0);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new SwbException("ファイル書き込みに失敗しました。");
+        }
+    }
+    
+        private static void writeTab(String stampFile, SwbInfoModel sModel) throws Exception {
+        try {
+            File f = new File(stampFile);
+            String dirName = f.getPath() + ".txt";
+            Path path = Paths.get(dirName);
+            MakeCsvFile.writeCSV(path, sModel, 1);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new SwbException("ファイル書き込みに失敗しました。");

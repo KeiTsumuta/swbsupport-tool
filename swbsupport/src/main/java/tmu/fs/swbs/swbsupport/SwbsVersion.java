@@ -24,6 +24,6 @@ package tmu.fs.swbs.swbsupport;
  */
 public class SwbsVersion {
 
-    public static final String version = "1.0.0-beta5";
+    public static final String version = "1.1.0";
     public static final String year = "2026";
 }

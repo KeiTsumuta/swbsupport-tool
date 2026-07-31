@@ -43,7 +43,7 @@ public class App extends Application {
         stage.setOnCloseRequest((WindowEvent t) -> {
             System.out.println("--- SWBSupport end ---");
         });
-        scene = new Scene(loadFXML("mainWin"), 640, 350);
+        scene = new Scene(loadFXML("mainWin"), 1000, 650);
         scene.getStylesheets().add(App.class.getResource("/styles/Styles.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Report tool for STAMP Workbench");

@@ -15,7 +15,7 @@
  *	 You should have received a copy of the GNU General Public License
  *	 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package tmu.fs.swbs.hctree.writer;
+package tmu.fs.swbs.hcftree.writer;
 
 import java.io.File;
 import tmu.fs.swbs.hcftree.model.SwbInfoModel;
@@ -43,7 +43,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class MakeExcelFile {
 
     private static final String[] DATA_TITLE = {
-        "  ", "Action", "UCA", "HCF", "Scenario", " - ", "内容"
+        "  ", "Action", "UCA", "HCF", "シナリオ", "安全対策", "内　　　　　容"
     };
     private static final int[] COLUMN_SIZE = {
         500, 1600, 1600, 3000, 3200, 3000, 20000
@@ -209,11 +209,11 @@ public class MakeExcelFile {
             setCellValue(row, 5, "", cuStyle);
             setCellValue(row, 6, sm.getDescription(), wStyle);
             currentRow++;
-            setScenarioAndCountmeData(sheet, sm.getChildren());
+            setScenarioData(sheet, sm.getChildren());
         }
     }
 
-    private static void setScenarioAndCountmeData(Sheet sheet, List<SwbInfoModel> scinas) {
+    private static void setScenarioData(Sheet sheet, List<SwbInfoModel> scinas) {
         for (int i = 0; i < scinas.size(); i++) {
             Row row = sheet.createRow(currentRow);
             createCells(row, DATA_TITLE.length);
@@ -223,14 +223,30 @@ public class MakeExcelFile {
             setCellValue(row, 3, "", chStyle);
             String type = sm.getType();
             String descri = sm.getDescription();
-            if (type.equals("countme")) {
-                type = "対策";
-                if (sm.getAtt() != null && sm.getAtt().length() > 0) {
-                    descri = descri + "\n注）" + sm.getAtt();
-                }
+            setCellValue(row, 4, "シナリオ：" + sm.getId(), ctStyle);
+            setCellValue(row, 5, "", cuStyle);
+            setCellValue(row, 6, descri, wStyle);
+            currentRow++;
+            setSaftyMeasuresData(sheet, sm.getChildren());
+        }
+    }
+
+    private static void setSaftyMeasuresData(Sheet sheet, List<SwbInfoModel> scinas) {
+        for (int i = 0; i < scinas.size(); i++) {
+            Row row = sheet.createRow(currentRow);
+            createCells(row, DATA_TITLE.length);
+            SwbInfoModel sm = scinas.get(i);
+            setCellValue(row, 1, "", chStyle);
+            setCellValue(row, 2, "", chStyle);
+            setCellValue(row, 3, "", chStyle);
+            setCellValue(row, 4, "", chStyle);
+            String type = sm.getType();
+            String descri = sm.getDescription();
+            type = "安全対策";
+            if (sm.getAtt() != null && sm.getAtt().length() > 0) {
+                descri = descri + "\n注）" + sm.getAtt();
             }
-            setCellValue(row, 4, type, ctStyle);
-            setCellValue(row, 5, sm.getId(), cuStyle);
+            setCellValue(row, 5, type + sm.getId(), ctStyle);
             setCellValue(row, 6, descri, wStyle);
             currentRow++;
         }

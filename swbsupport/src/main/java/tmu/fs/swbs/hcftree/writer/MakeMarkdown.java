@@ -15,33 +15,27 @@
  *	 You should have received a copy of the GNU General Public License
  *	 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package tmu.fs.swbs.hctree.writer;
+package tmu.fs.swbs.hcftree.writer;
 
 import java.util.List;
 import tmu.fs.swbs.hcftree.model.SwbInfoModel;
 
 /**
- *  Action-UCF-HCFのツリー状データをタブ形式で編集出力する。
- * 
+ * Action-UCF-HCFのツリー状データをマークダウン形式に編集出力する。
+ *
  * @author Keiichi Tsumuta
  */
-public class MakeTabFile {
-    
-    private static final String DATA_TITLE = 
-        "Action \tUCA \tHCF \tScenario \t内容";
+public class MakeMarkdown {
 
-    
     /**
-     * タブ形式のテキストデータを作成する。
+     * マークダウン形式のテキストデータを作成する。
      *
      * @param sm　STAMP Workbenchデータモデル情報
      * @return マークダウンテキスト
      */
-    public static String getTabDoc(SwbInfoModel sm) {
+    public static String getMarkdownDoc(SwbInfoModel sm) {
         StringBuilder sb = new StringBuilder();
-        sb.append(DATA_TITLE).append("\n");
         setActionData(sm.getChildren(), sb);
-        System.out.println("\n\n" + sb.toString() + "\n");
         return sb.toString();
     }
 
@@ -49,7 +43,7 @@ public class MakeTabFile {
     private static void setActionData(List<SwbInfoModel> actions, StringBuilder sb) {
         for (int i = 0; i < actions.size(); i++) {
             SwbInfoModel sm = actions.get(i);
-            sb.append(sm.getType()).append(" \t\t\t\t");
+            sb.append("# ").append(sm.getType()).append(" : ");
             sb.append(sm.getId()).append("\n");
             setUcaData(sm.getChildren(), sb);
         }
@@ -59,8 +53,8 @@ public class MakeTabFile {
     private static void setUcaData(List<SwbInfoModel> ucas, StringBuilder sb) {
         for (int i = 0; i < ucas.size(); i++) {
             SwbInfoModel sm = ucas.get(i);
-            sb.append("\t\t ").append(sm.getType()).append("\t");
-            sb.append(sm.getId()).append("\t");
+            sb.append("## ").append(sm.getType()).append(":");
+            sb.append(sm.getId()).append("\n");
             sb.append(sm.getDescription()).append("\n");
             setHcfData(sm.getChildren(), sb);
         }
@@ -70,30 +64,44 @@ public class MakeTabFile {
     private static void setHcfData(List<SwbInfoModel> hcfs, StringBuilder sb) {
         for (int i = 0; i < hcfs.size(); i++) {
             SwbInfoModel sm = hcfs.get(i);
-            sb.append("\t\t\t ").append(sm.getType()).append("\t");
-            sb.append(sm.getId()).append("\t");
+            sb.append("### ").append(sm.getType()).append(":");
+            sb.append(sm.getId()).append("\n");
             sb.append(sm.getDescription()).append("\n");
-            setScenarioAndCountmeData(sm.getChildren(), sb);
+            setScenarioData(sm.getChildren(), sb);
         }
     }
 
     // シナリオと対策データの出力
-    private static void setScenarioAndCountmeData(List<SwbInfoModel> scinas, StringBuilder sb) {
+    private static void setScenarioData(List<SwbInfoModel> scinas, StringBuilder sb) {
         for (int i = 0; i < scinas.size(); i++) {
             SwbInfoModel sm = scinas.get(i);
             String type = sm.getType();
             String descri = sm.getDescription();
-            if (type.equals("countme")) {
-                type = "対策";
-                if (sm.getAtt() != null && sm.getAtt().length() > 0) {
-                    descri = descri + "\t" + sm.getAtt();
-                }
-            }
-            sb.append("\t\t\t\t ").append(type).append("\t");
-            sb.append(sm.getId()).append("\t");
+            sb.append("#### ").append("シナリオ ");
+            sb.append(sm.getId()).append("\n");
+            sb.append("```\n");
             sb.append(descri).append("\n");
+            sb.append("```\n");
+            setSaftyMeasuresData(sm.getChildren(), sb);
+        }
+    }
+
+    // シナリオと安全対策データの出力
+    private static void setSaftyMeasuresData(List<SwbInfoModel> scinas, StringBuilder sb) {
+        for (int i = 0; i < scinas.size(); i++) {
+            SwbInfoModel sm = scinas.get(i);
+            String type = sm.getType();
+            String descri = sm.getDescription();
+            type = "安全対策";
+            if (sm.getAtt() != null && sm.getAtt().length() > 0) {
+                descri = descri + "\n注）" + sm.getAtt();
+            }
+            sb.append("##### ").append(type).append(" : ");
+            sb.append(sm.getId()).append("\n");
+            sb.append("```\n");
+            sb.append(descri).append("\n");
+            sb.append("```\n");
         }
     }
 
 }
-

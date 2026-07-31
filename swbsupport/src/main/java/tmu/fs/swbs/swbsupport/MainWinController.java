@@ -26,14 +26,18 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import tmu.fs.swbs.hcftree.Hcftree;
 import tmu.fs.swbs.hcftree.SwbException;
+import tmu.fs.swbs.hcftree.model.SwbInfoModel;
 
 /**
  * メイン画面コントローラー処理
@@ -43,10 +47,10 @@ import tmu.fs.swbs.hcftree.SwbException;
 public class MainWinController implements Initializable {
 
     @FXML
-    private Label versionDisplay; // Version表示
+    private TextField stampPrijectDirFile; // STAMPファイル入力エリア
 
     @FXML
-    private TextField stampPrijectDirFile; // STAMPファイル入力エリア
+    private TreeView stampTreeDisplay;  // 内容のツリー表示
 
     @FXML
     private RadioButton excelSelection; // Excel選択ラジオボタン
@@ -66,9 +70,13 @@ public class MainWinController implements Initializable {
     @FXML
     private RadioButton coordinateOrderSelection; // 表示座標順でのソート選択ラジオボタン
 
+    @FXML
+    private Button executeButton; // 実行ボタン
+
+    private TreeItem<SwbInfoModel> treeInfo;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        versionDisplay.setText("Ver." + SwbsVersion.version);
         ToggleGroup tg = new ToggleGroup();
         excelSelection.setToggleGroup(tg);
         excelSelection.setSelected(true); // デフォルト選択設定
@@ -80,6 +88,10 @@ public class MainWinController implements Initializable {
         ucaOrderSelection.setToggleGroup(tg2);
         ucaOrderSelection.setSelected(true); // デフォルト選択設定
         coordinateOrderSelection.setToggleGroup(tg2);
+
+        executeButton.setDisable(true); // 最初disableにしておく
+
+        stampTreeDisplay.setOnMouseClicked(event -> selectTreeNode(event));
     }
 
     /**
@@ -105,13 +117,12 @@ public class MainWinController implements Initializable {
     }
 
     /**
-     * 実行ボタンクリック
+     * ツリー生成ボタンクリック
      *
      * @param event
      */
     @FXML
-    public void executeAction(ActionEvent event) {
-        System.out.println("!!! 実行ボタンクリック !!!");
+    public void createTreeAction(ActionEvent event) {
         String stampPjFile = stampPrijectDirFile.getText();
         if (!(stampPjFile != null && stampPjFile.length() > 5)) {
             Alert alert = new Alert(AlertType.WARNING,
@@ -120,6 +131,39 @@ public class MainWinController implements Initializable {
             Optional opt = alert.showAndWait();
             return;
         }
+        try {
+            int orderType = 0; // UCA番号順
+            if (coordinateOrderSelection.isSelected()) {
+                orderType = 1; // UCA矢印の始点の表示座標順
+            }
+            Hcftree.makeTree(stampPjFile, orderType);
+            treeInfo = TreeDisplayData.getMakeTree(Hcftree.getTreeData());
+            treeInfo.setExpanded(true);
+            stampTreeDisplay.setRoot(treeInfo);
+            executeButton.setDisable(false);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * 実行ボタンクリック
+     *
+     * @param event
+     */
+    @FXML
+    public void executeAction(ActionEvent event) {
+        System.out.println("!!! 実行ボタンクリック !!!");
+        String stampPjFile = stampPrijectDirFile.getText();
+        if (Hcftree.getTreeData() == null) {
+            Alert alert = new Alert(AlertType.WARNING,
+                    "ツリーデータが生成されていません。",
+                    ButtonType.OK);
+            Optional opt = alert.showAndWait();
+            return;
+        }
+        // 表示されているツリーデータを設定する。
+        Hcftree.setTreeData(TreeDisplayData.getTreeModel(treeInfo));
         String type = "";
         if (excelSelection.isSelected()) {
             type = "excel";
@@ -130,15 +174,9 @@ public class MainWinController implements Initializable {
         } else if (tabTextSelection.isSelected()) {
             type = "txt";
         }
-
-        int orderType = 0;
-        if (coordinateOrderSelection.isSelected()) {
-            orderType = 1;
-        }
-
         // ファイル出力
         try {
-            Hcftree.makeTree(type, orderType, stampPjFile);
+            Hcftree.outputDoc(type, stampPjFile);
             Alert alert = new Alert(AlertType.INFORMATION,
                     "ファイル出力が完了しました。",
                     ButtonType.OK);
@@ -174,6 +212,11 @@ public class MainWinController implements Initializable {
 
         ucaOrderSelection.setSelected(true);
         coordinateOrderSelection.setSelected(false);
+
+        SwbInfoModel sw = new SwbInfoModel("STAMP/STPA", "", "");
+        TreeItem<SwbInfoModel> item = new TreeItem(sw);
+        stampTreeDisplay.setRoot(item);
+        executeButton.setDisable(true);
     }
 
     /**
@@ -189,6 +232,25 @@ public class MainWinController implements Initializable {
                 + "Copyright (C) " + SwbsVersion.year + "  Keiichi Tsumuta\n"
                 + "License : GNU General Public License version 3");
         alert.showAndWait();
+    }
+
+    private void selectTreeNode(MouseEvent event) {
+        int index = stampTreeDisplay.getFocusModel().getFocusedIndex();
+        TreeItem<SwbInfoModel> selectedItem = (TreeItem<SwbInfoModel>) stampTreeDisplay.getFocusModel().getFocusedItem();
+        SwbInfoModel sm = (SwbInfoModel) selectedItem.getValue();
+        //System.out.println("Tree node select：(" + index + "), type=" + sm.getType() + ", " + sm.getId());
+
+        if (sm.getType().equals(SwbInfoModel.SAFTY_ME)) {
+            // 安全対策を選択した場合
+            try {
+                TreeEditDialog treeEditDialog = new TreeEditDialog();
+                treeEditDialog.setObject(treeInfo, selectedItem);
+                treeEditDialog.show(event);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+        }
     }
 
 }

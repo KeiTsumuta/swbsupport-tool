@@ -15,7 +15,7 @@
  *	 You should have received a copy of the GNU General Public License
  *	 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package tmu.fs.swbs.hctree.writer;
+package tmu.fs.swbs.hcftree.writer;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -36,7 +36,7 @@ import org.apache.commons.csv.CSVPrinter;
 public class MakeCsvFile {
 
     private static final String[] DATA_TITLE = {
-        "  ", "Action", "UCA", "HCF", "Scenario", "内容"
+        "Action", "UCA", "HCF", "シナリオ", "安全対策", "内容"
     };
 
     private static List<List<String>> list;
@@ -50,16 +50,21 @@ public class MakeCsvFile {
      *
      * @param path　ファイルのパス指定
      * @param sm STAMP Workbenchのデータモデル情報
+     * @param type フォーマットタイプ（0: CSV形式、1:　タブ形式）
      */
-    public static void writeCSV(Path path, SwbInfoModel sm) {
+    public static void writeCSV(Path path, SwbInfoModel sm, int type) {
         list = new ArrayList<>();
         // タイトル部設定
         list.add(Arrays.asList(DATA_TITLE));
         setActionData(sm.getChildren());
 
-        //CSVフォーマット作成
-        CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                .get();
+        //CSV or タブフォーマット作成
+        CSVFormat csvFormat = null;
+        if (type == 0) {
+            csvFormat = CSVFormat.DEFAULT.builder().get();
+        } else {
+            csvFormat = CSVFormat.TDF.builder().get();
+        }
         // ファイルに書き込み
         try (FileOutputStream fos = new FileOutputStream(path.toFile().getAbsolutePath()); // 
                  OutputStreamWriter osw = new OutputStreamWriter(fos, "sjis"); //
@@ -94,24 +99,32 @@ public class MakeCsvFile {
             SwbInfoModel sm = hcfs.get(i);
             String[] ps = {"", "", sm.getType(), sm.getId(), "", sm.getDescription()};
             list.add(Arrays.asList(ps));
-            setScenarioAndCountmeData(sm.getChildren());
+            setScenarioData(sm.getChildren());
         }
     }
 
-    private static void setScenarioAndCountmeData(List<SwbInfoModel> scinas) {
+    private static void setScenarioData(List<SwbInfoModel> scinas) {
         for (int i = 0; i < scinas.size(); i++) {
             SwbInfoModel sm = scinas.get(i);
             String type = sm.getType();
             String descri = sm.getDescription();
-            if (type.equals("countme")) {
-                type = "対策";
-                if (sm.getAtt() != null && sm.getAtt().length() > 0) {
-                    descri = descri + "\n注）" + sm.getAtt();
-                }
-            }
-            String[] ps = {"", "", "", type, sm.getId(), descri};
+            String[] ps = {"", "", "", type + sm.getId(), "", descri};
             list.add(Arrays.asList(ps));
+            setSaftyMeasuresData(sm.getChildren());
         }
     }
 
+    private static void setSaftyMeasuresData(List<SwbInfoModel> scinas) {
+        for (int i = 0; i < scinas.size(); i++) {
+            SwbInfoModel sm = scinas.get(i);
+            String type = sm.getType();
+            String descri = sm.getDescription();
+            type = "安全対策";
+            if (sm.getAtt() != null && sm.getAtt().length() > 0) {
+                descri = descri + "\n注）" + sm.getAtt();
+            }
+            String[] ps = {"", "", "", "", type + sm.getId(), descri};
+            list.add(Arrays.asList(ps));
+        }
+    }
 }

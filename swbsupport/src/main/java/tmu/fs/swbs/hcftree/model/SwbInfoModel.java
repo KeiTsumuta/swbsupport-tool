@@ -27,6 +27,12 @@ import java.util.List;
  */
 public class SwbInfoModel {
 
+    public static final String ACTION = "action";     // コントロール　アクション
+    public static final String UCA = "uca";           // UCA
+    public static final String HCF = "hcf";           // HCF
+    public static final String SCENARIO = "scenario"; // シナリオ
+    public static final String SAFTY_ME = "safety measures";   // 安全対策
+
     private final String type;
     private final String xmiId;
     private final String id;
@@ -135,6 +141,10 @@ public class SwbInfoModel {
         this.children = children;
     }
 
+    public void clearChildren() {
+        children = new ArrayList<>();
+    }
+
     /**
      * @param children the children to set
      */
@@ -169,13 +179,55 @@ public class SwbInfoModel {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        switch (type) {
+            case ACTION ->
+                sb.append(type).append(" : ").append(getId());
+            case UCA -> {
+                sb.append(type).append(" : ").append(getId()).append(":");
+                if (description != null) {
+                    sb.append(description);
+                }
+            }
+            case HCF -> {
+                sb.append(type).append(" : ").append(getId()).append(":");
+                if (description != null) {
+                    sb.append(description);
+                }
+            }
+            case SCENARIO -> {
+                sb.append("シナリオ").append(" : ").append(getId()).append(":");
+                if (description != null) {
+                    sb.append(description);
+                }
+            }
+            case SAFTY_ME -> {
+                sb.append("安全対策").append(" : ").append(getId()).append(":");
+                if (description != null) {
+                    sb.append(description);
+                }
+                if (getAtt() != null && getAtt().length() > 0) {
+                    sb.append("\n注）").append(getAtt());
+                }
+            }
+            default -> {
+                sb.append(type);
+                if (description != null) {
+                    sb.append(description);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    public String toTreeString() {
+        StringBuilder sb = new StringBuilder();
         sb.append(type).append(":");
         sb.append(id).append(":");
         sb.append(description).append(":");
         sb.append(att).append(", ").append(att2).append("\n");
         for (SwbInfoModel child : children) {
             sb.append("\t");
-            sb.append(child.toString());
+            sb.append(child.toTreeString());
         }
         sb.append("\n");
         return sb.toString();
