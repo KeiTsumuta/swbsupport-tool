@@ -29,7 +29,7 @@ mvn javafx:run
 ```
 Javaの実行環境を直接用いて起動する場合は以下となります。
 ```
-java --module-path target/lib;target/swbsupport-1.0.jar -m tmu.fs.swbs/tmu.fs.swbs.swbsupport.App
+java --module-path target/lib;target/swbsupport-1.1.jar -m tmu.fs.swbs/tmu.fs.swbs.swbsupport.App
 ```
 ## Windowsインストーラによる実行パッケージの生成
 Windowsインストーラは他の方法でも可能ですが、ここではJDKに付属したツール（jpackage）を用います。
@@ -39,9 +39,9 @@ Windowsインストーラは他の方法でも可能ですが、ここではJDK�
 生成コマンドの例を以下に示します。
 
 ```
-jpackage --type msi --win-shortcut --name swbsupport --win-dir-chooser  --input "swsrun\lib" --dest "release" --main-jar swbsupport-1.0.jar --main-class "tmu.fs.swbs.swbsupport.App"
+jpackage --type msi --win-shortcut --name swbsupport --win-dir-chooser  --input "swsrun\lib" --dest "release" --main-jar swbsupport-1.1.jar --main-class "tmu.fs.swbs.swbsupport.App"
 ```
-なお、この例では、swsrun/lib下のフォルダに本体（swbsupport-1.0.jar）とその依存するファイル（ビルドで生成されたtarget/libフォルダ下）のすべてをコピーして置いて置き、それを用いて作成しています。
+なお、この例では、swsrun/lib下のフォルダに本体（swbsupport-1.1.jar）とその依存するファイル（ビルドで生成されたtarget/libフォルダ下）のすべてをコピーして置いて置き、それを用いて作成しています。
 
 
 ## ライセンス
