@@ -1,0 +1,1 @@
+java --module-path lib -m tmu.fs.swbs/tmu.fs.swbs.swbsupport.App
