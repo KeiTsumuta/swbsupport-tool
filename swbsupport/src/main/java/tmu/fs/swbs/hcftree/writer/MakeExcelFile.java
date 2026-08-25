@@ -43,7 +43,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class MakeExcelFile {
 
     private static final String[] DATA_TITLE = {
-        "  ", "Action", "UCA", "HCF", "シナリオ", "安全対策", "内　　　　　容"
+        "  ", "Action", "UCA", "視点", "シナリオ", "安全対策", "内　　　　　容"
     };
     private static final int[] COLUMN_SIZE = {
         500, 1600, 1600, 3000, 3200, 3000, 20000
@@ -204,7 +204,7 @@ public class MakeExcelFile {
             SwbInfoModel sm = hcfs.get(i);
             setCellValue(row, 1, "", chStyle);
             setCellValue(row, 2, "", chStyle);
-            setCellValue(row, 3, sm.getType(), ctStyle);
+            setCellValue(row, 3, "視点", ctStyle);
             setCellValue(row, 4, sm.getId(), cuStyle);
             setCellValue(row, 5, "", cuStyle);
             setCellValue(row, 6, sm.getDescription(), wStyle);

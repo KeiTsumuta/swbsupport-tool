@@ -36,7 +36,7 @@ import org.apache.commons.csv.CSVPrinter;
 public class MakeCsvFile {
 
     private static final String[] DATA_TITLE = {
-        "Action", "UCA", "HCF", "シナリオ", "安全対策", "内容"
+        "Action", "UCA", "視点", "シナリオ", "安全対策", "内容"
     };
 
     private static List<List<String>> list;
@@ -97,7 +97,7 @@ public class MakeCsvFile {
     private static void setHcfData(List<SwbInfoModel> hcfs) {
         for (int i = 0; i < hcfs.size(); i++) {
             SwbInfoModel sm = hcfs.get(i);
-            String[] ps = {"", "", sm.getType(), sm.getId(), "", sm.getDescription()};
+            String[] ps = {"", "", "視点", sm.getId(), "", sm.getDescription()};
             list.add(Arrays.asList(ps));
             setScenarioData(sm.getChildren());
         }

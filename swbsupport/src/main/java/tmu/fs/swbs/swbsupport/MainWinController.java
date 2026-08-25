@@ -237,6 +237,9 @@ public class MainWinController implements Initializable {
     private void selectTreeNode(MouseEvent event) {
         int index = stampTreeDisplay.getFocusModel().getFocusedIndex();
         TreeItem<SwbInfoModel> selectedItem = (TreeItem<SwbInfoModel>) stampTreeDisplay.getFocusModel().getFocusedItem();
+        if (selectedItem == null) {
+            return;
+        }
         SwbInfoModel sm = (SwbInfoModel) selectedItem.getValue();
         //System.out.println("Tree node select：(" + index + "), type=" + sm.getType() + ", " + sm.getId());
 

@@ -29,7 +29,7 @@ public class SwbInfoModel {
 
     public static final String ACTION = "action";     // コントロール　アクション
     public static final String UCA = "uca";           // UCA
-    public static final String HCF = "hcf";           // HCF
+    public static final String HCF = "hcf";           // HCF、視点
     public static final String SCENARIO = "scenario"; // シナリオ
     public static final String SAFTY_ME = "safety measures";   // 安全対策
 
@@ -189,7 +189,7 @@ public class SwbInfoModel {
                 }
             }
             case HCF -> {
-                sb.append(type).append(" : ").append(getId()).append(":");
+                sb.append("視点").append(" : ").append(getId()).append(":");
                 if (description != null) {
                     sb.append(description);
                 }

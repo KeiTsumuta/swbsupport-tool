@@ -64,7 +64,7 @@ public class MakeMarkdown {
     private static void setHcfData(List<SwbInfoModel> hcfs, StringBuilder sb) {
         for (int i = 0; i < hcfs.size(); i++) {
             SwbInfoModel sm = hcfs.get(i);
-            sb.append("### ").append(sm.getType()).append(":");
+            sb.append("### ").append("視点").append(":");
             sb.append(sm.getId()).append("\n");
             sb.append(sm.getDescription()).append("\n");
             setScenarioData(sm.getChildren(), sb);
