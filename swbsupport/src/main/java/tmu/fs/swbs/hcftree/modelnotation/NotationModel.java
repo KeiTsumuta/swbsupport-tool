@@ -32,7 +32,12 @@ public class NotationModel {
 
     public NotationModel(String href, int x, int y, String text) {
         String[] tks = href.split("#");
-        this.modelId = tks[1];
+        if (tks.length == 2) {
+            this.modelId = tks[1];
+        } else {
+            this.modelId = "";
+            System.out.println("??? NotationModel create : href format error??? : href=" + href);
+        }
         this.x = x;
         this.y = y;
         this.text = text;

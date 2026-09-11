@@ -86,8 +86,10 @@ public class NotationXml extends SwbXml {
                     href = model.getAttribute("href");
                 }
             }
-            NotationModel model = new NotationModel(href, x, y, text);
-            notations.add(model);
+            if (href.length() > 0) {
+                NotationModel model = new NotationModel(href, x, y, text);
+                notations.add(model);
+            }
             //System.out.println("** NotationModel : " + model.toString());
         }
     }
